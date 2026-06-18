@@ -2,6 +2,8 @@
 
 Site web de révision dédié au cours de **SMSI**, **EBIOS RM** et **ISO/IEC 27001**, réalisé dans le cadre d’un Master 2 en cybersécurité.
 
+Lien: https://weexee.github.io/Revisions/
+
 L’objectif du projet est de permettre une révision rapide, claire et efficace avant un quiz papier, avec un format utilisable aussi bien sur ordinateur que sur téléphone.
 
 ## Objectif du projet
