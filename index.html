@@ -1,0 +1,899 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>Révision SMSI — EBIOS RM &amp; ISO 27001</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700;12..96,800&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#0E1116; --bg2:#151A21; --surface:#1B222B; --surface2:#232E39;
+  --line:#2C3743; --line2:#3A4756;
+  --text:#E9EEF3; --muted:#94A2B0; --muted2:#6E7C8A;
+  --ebios:#FF2E7E; --iso:#36A6FF; --accent:#1FD3B0;
+  --facile:#3FD17A; --moyen:#FFC24B; --difficile:#FF8A3D; --expert:#FF4D6D;
+  --ok:#3FD17A; --ko:#FF5470;
+  --r:14px;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html{-webkit-text-size-adjust:100%}
+body{
+  background:var(--bg);
+  color:var(--text);
+  font-family:'Inter',system-ui,sans-serif;
+  font-size:16px; line-height:1.55;
+  -webkit-font-smoothing:antialiased;
+  padding-bottom:88px;
+}
+::selection{background:var(--ebios);color:#fff}
+.mono{font-family:'JetBrains Mono',monospace}
+.wrap{max-width:880px;margin:0 auto;padding:0 18px}
+
+/* ---------- HEADER ---------- */
+header.top{
+  position:sticky;top:0;z-index:40;
+  background:rgba(14,17,22,.82);backdrop-filter:blur(12px);
+  border-bottom:1px solid var(--line);
+}
+.top .wrap{display:flex;align-items:center;gap:14px;height:62px}
+.brand{display:flex;align-items:center;gap:11px;font-family:'Bricolage Grotesque',sans-serif;font-weight:800;font-size:1.06rem;letter-spacing:-.02em}
+.logo{width:30px;height:30px;border-radius:8px;flex:none;
+  background:linear-gradient(135deg,var(--ebios),var(--iso));
+  display:grid;place-items:center;color:#fff;font-family:'JetBrains Mono';font-weight:700;font-size:.82rem}
+.brand small{display:block;font-family:'Inter';font-weight:500;font-size:.7rem;color:var(--muted);letter-spacing:0}
+.nav-desktop{margin-left:auto;display:flex;gap:4px}
+.nav-desktop button{
+  background:none;border:none;color:var(--muted);font-family:'Inter';font-weight:600;
+  font-size:.92rem;padding:8px 14px;border-radius:9px;cursor:pointer;transition:.15s}
+.nav-desktop button:hover{color:var(--text);background:var(--surface)}
+.nav-desktop button.active{color:var(--text);background:var(--surface2)}
+
+/* ---------- BOTTOM NAV (mobile) ---------- */
+nav.bottom{
+  position:fixed;bottom:0;left:0;right:0;z-index:50;display:none;
+  background:rgba(21,26,33,.94);backdrop-filter:blur(14px);
+  border-top:1px solid var(--line);
+  padding:8px 10px calc(8px + env(safe-area-inset-bottom));
+  grid-template-columns:repeat(3,1fr);gap:6px}
+nav.bottom button{
+  background:none;border:none;color:var(--muted2);cursor:pointer;
+  display:flex;flex-direction:column;align-items:center;gap:3px;
+  font-family:'Inter';font-weight:600;font-size:.7rem;padding:6px 0;border-radius:10px;transition:.15s}
+nav.bottom button svg{width:22px;height:22px;stroke:currentColor;fill:none;stroke-width:1.9}
+nav.bottom button.active{color:var(--text)}
+nav.bottom button.active.q{color:var(--ebios)}
+nav.bottom button.active.r{color:var(--iso)}
+nav.bottom button.active.m{color:var(--accent)}
+
+main{padding-top:26px}
+.view{display:none;animation:fade .35s ease}
+.view.active{display:block}
+@keyframes fade{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
+
+h1.page{font-family:'Bricolage Grotesque';font-weight:800;font-size:1.9rem;letter-spacing:-.03em;line-height:1.05}
+.page-sub{color:var(--muted);margin-top:6px;font-size:.96rem}
+.eyebrow{font-family:'JetBrains Mono';font-size:.72rem;letter-spacing:.18em;text-transform:uppercase;color:var(--muted2)}
+
+/* ---------- QUIZ : setup ---------- */
+.setup{margin-top:22px}
+.filter-block{margin-bottom:20px}
+.filter-label{font-family:'JetBrains Mono';font-size:.72rem;letter-spacing:.14em;text-transform:uppercase;color:var(--muted2);margin-bottom:10px}
+.chips{display:flex;flex-wrap:wrap;gap:8px}
+.chip{
+  border:1px solid var(--line2);background:var(--surface);color:var(--muted);
+  padding:9px 15px;border-radius:999px;font-size:.88rem;font-weight:600;cursor:pointer;
+  transition:.14s;display:inline-flex;align-items:center;gap:7px;font-family:'Inter'}
+.chip:hover{border-color:var(--line2);color:var(--text)}
+.chip .dot{width:9px;height:9px;border-radius:50%;flex:none}
+.chip.on{color:#fff;border-color:transparent}
+.chip.on.all{background:var(--surface2);color:var(--text);border-color:var(--line2)}
+.chip.on.ebios{background:var(--ebios);box-shadow:0 4px 16px -6px var(--ebios)}
+.chip.on.iso{background:var(--iso);box-shadow:0 4px 16px -6px var(--iso)}
+.chip.on.f{background:var(--facile);color:#062}
+.chip.on.m{background:var(--moyen);color:#5a3d00}
+.chip.on.d{background:var(--difficile);color:#5a2400}
+.chip.on.e{background:var(--expert);color:#5a0018}
+.count-line{margin:6px 0 24px;color:var(--muted);font-size:.92rem}
+.count-line b{color:var(--text);font-family:'JetBrains Mono';font-size:1.05rem}
+.btn-primary{
+  width:100%;border:none;border-radius:13px;cursor:pointer;
+  background:linear-gradient(135deg,var(--ebios),#ff5c9c);color:#fff;
+  font-family:'Bricolage Grotesque';font-weight:700;font-size:1.06rem;letter-spacing:-.01em;
+  padding:17px;transition:.15s;box-shadow:0 8px 26px -10px var(--ebios)}
+.btn-primary:hover{transform:translateY(-1px);filter:brightness(1.05)}
+.btn-primary:disabled{opacity:.4;cursor:not-allowed;transform:none;box-shadow:none;
+  background:var(--surface2);color:var(--muted2)}
+.opt-row{display:flex;gap:14px;align-items:center;margin-top:14px}
+.toggle{display:flex;align-items:center;gap:9px;color:var(--muted);font-size:.9rem;cursor:pointer;user-select:none}
+.toggle input{display:none}
+.toggle .sw{width:42px;height:24px;border-radius:999px;background:var(--line2);position:relative;transition:.18s;flex:none}
+.toggle .sw::after{content:"";position:absolute;top:2px;left:2px;width:20px;height:20px;border-radius:50%;background:#fff;transition:.18s}
+.toggle input:checked + .sw{background:var(--accent)}
+.toggle input:checked + .sw::after{transform:translateX(18px)}
+
+.bestbar{display:flex;gap:10px;margin-top:18px}
+.stat{flex:1;background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:13px 15px}
+.stat .k{font-family:'JetBrains Mono';font-size:1.5rem;font-weight:700;line-height:1}
+.stat .l{color:var(--muted);font-size:.76rem;margin-top:4px}
+
+/* ---------- QUIZ : running ---------- */
+.q-head{display:flex;align-items:center;justify-content:space-between;gap:14px;margin-bottom:14px}
+.q-progress{flex:1}
+.pbar{height:7px;border-radius:99px;background:var(--surface2);overflow:hidden}
+.pbar span{display:block;height:100%;border-radius:99px;background:linear-gradient(90deg,var(--ebios),var(--iso));transition:width .35s ease}
+.q-meta{display:flex;justify-content:space-between;font-size:.78rem;color:var(--muted);margin-top:7px;font-family:'JetBrains Mono'}
+.q-score{font-family:'JetBrains Mono';font-weight:700;font-size:1.15rem;flex:none;min-width:54px;text-align:right}
+.q-score b{color:var(--ok)}
+
+.card{background:var(--surface);border:1px solid var(--line);border-radius:18px;padding:22px;margin-top:6px}
+.q-tags{display:flex;gap:8px;margin-bottom:15px;flex-wrap:wrap}
+.tag{font-family:'JetBrains Mono';font-size:.68rem;font-weight:700;letter-spacing:.06em;text-transform:uppercase;
+  padding:4px 10px;border-radius:7px}
+.tag.ebios{background:rgba(255,46,126,.14);color:var(--ebios)}
+.tag.iso{background:rgba(54,166,255,.14);color:var(--iso)}
+.tag.f{background:rgba(63,209,122,.15);color:var(--facile)}
+.tag.m{background:rgba(255,194,75,.15);color:var(--moyen)}
+.tag.d{background:rgba(255,138,61,.15);color:var(--difficile)}
+.tag.e{background:rgba(255,77,109,.15);color:var(--expert)}
+.q-text{font-family:'Bricolage Grotesque';font-weight:700;font-size:1.24rem;line-height:1.3;letter-spacing:-.02em}
+.answers{margin-top:20px;display:flex;flex-direction:column;gap:11px}
+.ans{
+  text-align:left;border:1.5px solid var(--line2);background:var(--bg2);color:var(--text);
+  border-radius:12px;padding:14px 16px;font-size:.98rem;cursor:pointer;transition:.13s;
+  display:flex;align-items:flex-start;gap:13px;font-family:'Inter';line-height:1.4}
+.ans:hover:not(:disabled){border-color:var(--muted2);background:var(--surface2)}
+.ans:disabled{cursor:default}
+.ans .key{font-family:'JetBrains Mono';font-weight:700;font-size:.82rem;width:24px;height:24px;flex:none;
+  border-radius:7px;background:var(--surface2);display:grid;place-items:center;color:var(--muted);margin-top:1px;transition:.13s}
+.ans.correct{border-color:var(--ok);background:rgba(63,209,122,.12)}
+.ans.correct .key{background:var(--ok);color:#04200f}
+.ans.wrong{border-color:var(--ko);background:rgba(255,84,112,.1)}
+.ans.wrong .key{background:var(--ko);color:#2a0008}
+.ans.dim{opacity:.5}
+.explain{margin-top:16px;border-left:3px solid var(--accent);background:var(--bg2);
+  border-radius:0 12px 12px 0;padding:13px 16px;font-size:.92rem;color:var(--muted);
+  display:none}
+.explain.show{display:block;animation:fade .25s}
+.explain b{color:var(--accent);font-weight:600}
+.explain .verdict{display:block;font-family:'Bricolage Grotesque';font-weight:700;margin-bottom:5px;font-size:1rem}
+.explain .verdict.ok{color:var(--ok)} .explain .verdict.ko{color:var(--ko)}
+.next-row{margin-top:18px;display:flex;gap:10px}
+.btn-next{flex:1;border:none;border-radius:12px;cursor:pointer;padding:15px;
+  font-family:'Bricolage Grotesque';font-weight:700;font-size:1rem;transition:.15s;
+  background:var(--surface2);color:var(--text)}
+.btn-next:hover{background:var(--line2)}
+.btn-next.go{background:linear-gradient(135deg,var(--iso),#6cc0ff);color:#04263f;box-shadow:0 8px 24px -12px var(--iso)}
+.btn-quit{border:1px solid var(--line2);background:none;color:var(--muted);border-radius:12px;padding:0 18px;cursor:pointer;font-weight:600;font-size:.9rem}
+.btn-quit:hover{color:var(--text);border-color:var(--muted2)}
+
+/* ---------- QUIZ : results ---------- */
+.result-hero{text-align:center;padding:18px 0 6px}
+.ring{width:140px;height:140px;margin:0 auto 16px;position:relative}
+.ring svg{transform:rotate(-90deg)}
+.ring .pct{position:absolute;inset:0;display:grid;place-items:center;
+  font-family:'Bricolage Grotesque';font-weight:800;font-size:2rem}
+.result-hero h2{font-family:'Bricolage Grotesque';font-weight:800;font-size:1.5rem;letter-spacing:-.02em}
+.result-hero p{color:var(--muted);margin-top:5px}
+.review-title{font-family:'JetBrains Mono';font-size:.74rem;letter-spacing:.14em;text-transform:uppercase;color:var(--muted2);margin:26px 0 12px}
+.rev{background:var(--surface);border:1px solid var(--line);border-radius:13px;padding:15px 17px;margin-bottom:10px}
+.rev .rq{font-weight:600;font-size:.96rem;margin-bottom:9px;line-height:1.35}
+.rev .ra{font-size:.86rem;display:flex;gap:8px;align-items:flex-start;color:var(--muted)}
+.rev .ra .ic{flex:none;font-family:'JetBrains Mono';font-weight:700}
+.rev .ra.good .ic{color:var(--ok)} .rev .ra.bad .ic{color:var(--ko)}
+.rev .ra.good span{color:var(--text)}
+.rev .rex{font-size:.84rem;color:var(--muted);margin-top:9px;padding-top:9px;border-top:1px solid var(--line)}
+
+/* ---------- RECAP / MEMO ---------- */
+.prose h2{font-family:'Bricolage Grotesque';font-weight:800;font-size:1.45rem;letter-spacing:-.02em;margin:34px 0 4px;display:flex;align-items:center;gap:11px}
+.prose h2 .bar{width:5px;height:26px;border-radius:3px;flex:none}
+.prose h2.ebios .bar{background:var(--ebios)} .prose h2.iso .bar{background:var(--iso)} .prose h2.cross .bar{background:var(--accent)}
+.prose h3{font-family:'Bricolage Grotesque';font-weight:700;font-size:1.1rem;margin:22px 0 8px;color:var(--text)}
+.prose p{color:var(--muted);margin:8px 0;font-size:.96rem}
+.prose strong{color:var(--text);font-weight:600}
+.prose ul{list-style:none;margin:10px 0}
+.prose li{position:relative;padding-left:20px;margin:7px 0;color:var(--muted);font-size:.95rem}
+.prose li::before{content:"";position:absolute;left:2px;top:.6em;width:6px;height:6px;border-radius:2px;background:var(--line2)}
+.prose li.ebios::before{background:var(--ebios)} .prose li.iso::before{background:var(--iso)}
+.card-block{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:18px 20px;margin:14px 0}
+.callout{background:var(--bg2);border:1px solid var(--line);border-left:3px solid var(--accent);border-radius:0 12px 12px 0;padding:13px 17px;margin:14px 0;font-size:.92rem;color:var(--muted)}
+.callout b{color:var(--accent)}
+
+table.tbl{width:100%;border-collapse:collapse;margin:14px 0;font-size:.88rem;display:block;overflow-x:auto;white-space:nowrap}
+table.tbl th,table.tbl td{border:1px solid var(--line);padding:10px 12px;text-align:left;vertical-align:top}
+table.tbl th{background:var(--surface2);font-family:'JetBrains Mono';font-size:.74rem;letter-spacing:.04em;text-transform:uppercase;color:var(--muted);font-weight:700}
+table.tbl td{color:var(--muted)} table.tbl td b{color:var(--text)}
+@media(min-width:560px){table.tbl{white-space:normal}}
+
+.steps{counter-reset:s;margin:16px 0}
+.step{display:flex;gap:15px;padding:14px 0;border-bottom:1px solid var(--line)}
+.step:last-child{border:none}
+.step .n{counter-increment:s;flex:none;width:38px;height:38px;border-radius:11px;display:grid;place-items:center;
+  font-family:'JetBrains Mono';font-weight:700;color:#fff}
+.step .n::before{content:counter(s)}
+.step.ebios .n{background:var(--ebios)} .step.iso .n{background:var(--iso)}
+.step .body h4{font-family:'Bricolage Grotesque';font-weight:700;font-size:1.02rem}
+.step .body p{margin:3px 0 0;font-size:.9rem}
+
+/* memo glossary */
+.gloss{display:grid;gap:9px;margin:14px 0}
+.gterm{background:var(--surface);border:1px solid var(--line);border-radius:11px;padding:12px 15px;font-size:.92rem}
+.gterm dt{font-family:'JetBrains Mono';font-weight:700;color:var(--text);font-size:.84rem;letter-spacing:.02em}
+.gterm dd{color:var(--muted);margin-top:3px;font-size:.9rem}
+.memo-grid{display:grid;gap:12px;margin:14px 0}
+@media(min-width:620px){.memo-grid{grid-template-columns:1fr 1fr}}
+.mini{background:var(--surface);border:1px solid var(--line);border-radius:13px;padding:16px 18px}
+.mini h4{font-family:'Bricolage Grotesque';font-weight:700;font-size:1rem;margin-bottom:10px;display:flex;align-items:center;gap:9px}
+.mini h4 .pip{width:8px;height:8px;border-radius:50%}
+.mini .scale{display:flex;flex-direction:column;gap:6px}
+.mini .scale div{font-size:.85rem;color:var(--muted);display:flex;gap:9px}
+.mini .scale .lv{font-family:'JetBrains Mono';font-weight:700;color:var(--text);flex:none;width:30px}
+.toc{display:flex;flex-wrap:wrap;gap:8px;margin:18px 0 4px}
+.toc a{font-size:.84rem;color:var(--muted);text-decoration:none;border:1px solid var(--line);padding:7px 13px;border-radius:999px;transition:.14s;font-weight:600}
+.toc a:hover{color:var(--text);border-color:var(--line2);background:var(--surface)}
+
+footer{margin-top:50px;padding:24px 0;border-top:1px solid var(--line);color:var(--muted2);font-size:.82rem;text-align:center}
+:focus-visible{outline:2px solid var(--accent);outline-offset:2px;border-radius:6px}
+
+@media(max-width:640px){
+  .nav-desktop{display:none}
+  nav.bottom{display:grid}
+  h1.page{font-size:1.55rem}
+  .q-text{font-size:1.12rem}
+  .card{padding:18px}
+  .brand small{display:none}
+}
+@media(prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+</style>
+</head>
+<body>
+
+<header class="top">
+  <div class="wrap">
+    <div class="brand">
+      <span class="logo">SI</span>
+      <span>Révision SMSI<small>EBIOS RM &amp; ISO/IEC 27001</small></span>
+    </div>
+    <div class="nav-desktop">
+      <button data-go="quiz" class="active">Quiz</button>
+      <button data-go="recap">Récap cours</button>
+      <button data-go="memo">Mémo</button>
+    </div>
+  </div>
+</header>
+
+<main class="wrap">
+
+  <!-- ============ QUIZ ============ -->
+  <section id="quiz" class="view active">
+
+    <!-- setup -->
+    <div id="setup" class="setup">
+      <span class="eyebrow">Quiz d'entraînement</span>
+      <h1 class="page" style="margin-top:6px">Prépare ton QCM papier</h1>
+      <p class="page-sub">Choisis tes thèmes et niveaux. Correction immédiate avec explication à chaque question.</p>
+
+      <div class="bestbar">
+        <div class="stat"><div class="k mono" id="stTotal">0</div><div class="l">questions dispo.</div></div>
+        <div class="stat"><div class="k mono" id="stBest">—</div><div class="l">meilleur score</div></div>
+        <div class="stat"><div class="k mono" id="stDone">0</div><div class="l">quiz terminés</div></div>
+      </div>
+
+      <div class="filter-block" style="margin-top:26px">
+        <div class="filter-label">Thème</div>
+        <div class="chips" id="themeChips">
+          <button class="chip on all" data-theme="all">Tout</button>
+          <button class="chip" data-theme="ebios"><span class="dot" style="background:var(--ebios)"></span>EBIOS RM</button>
+          <button class="chip" data-theme="iso"><span class="dot" style="background:var(--iso)"></span>ISO 27001 / SMSI</button>
+        </div>
+      </div>
+
+      <div class="filter-block">
+        <div class="filter-label">Niveau de difficulté</div>
+        <div class="chips" id="diffChips">
+          <button class="chip on all" data-diff="all">Tous</button>
+          <button class="chip" data-diff="facile"><span class="dot" style="background:var(--facile)"></span>Facile</button>
+          <button class="chip" data-diff="moyen"><span class="dot" style="background:var(--moyen)"></span>Moyen</button>
+          <button class="chip" data-diff="difficile"><span class="dot" style="background:var(--difficile)"></span>Difficile</button>
+          <button class="chip" data-diff="expert"><span class="dot" style="background:var(--expert)"></span>Expert</button>
+        </div>
+      </div>
+
+      <div class="filter-block">
+        <div class="filter-label">Longueur</div>
+        <div class="chips" id="lenChips">
+          <button class="chip" data-len="10">10 questions</button>
+          <button class="chip on all" data-len="20">20 questions</button>
+          <button class="chip" data-len="40">40 questions</button>
+          <button class="chip" data-len="0">Toutes</button>
+        </div>
+      </div>
+
+      <div class="opt-row">
+        <label class="toggle"><input type="checkbox" id="shuffleOpt" checked><span class="sw"></span>Mélanger les réponses</label>
+      </div>
+
+      <p class="count-line"><b id="poolCount">0</b> question(s) correspondent à ta sélection.</p>
+      <button class="btn-primary" id="startBtn">Commencer la révision</button>
+    </div>
+
+    <!-- running -->
+    <div id="runner" style="display:none">
+      <div class="q-head">
+        <div class="q-progress">
+          <div class="pbar"><span id="pbar" style="width:0%"></span></div>
+          <div class="q-meta"><span id="qpos">1 / 20</span><span id="qfilters"></span></div>
+        </div>
+        <div class="q-score"><b id="scNow">0</b><span style="color:var(--muted)">/<span id="scSeen">0</span></span></div>
+      </div>
+
+      <div class="card">
+        <div class="q-tags" id="qtags"></div>
+        <div class="q-text" id="qtext"></div>
+        <div class="answers" id="answers"></div>
+        <div class="explain" id="explain"></div>
+        <div class="next-row">
+          <button class="btn-quit" id="quitBtn">Quitter</button>
+          <button class="btn-next" id="nextBtn" disabled>Valider une réponse</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- results -->
+    <div id="results" style="display:none">
+      <div class="result-hero">
+        <div class="ring">
+          <svg width="140" height="140" viewBox="0 0 140 140">
+            <circle cx="70" cy="70" r="60" fill="none" stroke="var(--surface2)" stroke-width="12"/>
+            <circle id="ringArc" cx="70" cy="70" r="60" fill="none" stroke="var(--ok)" stroke-width="12"
+              stroke-linecap="round" stroke-dasharray="377" stroke-dashoffset="377"/>
+          </svg>
+          <div class="pct" id="resPct">0%</div>
+        </div>
+        <h2 id="resTitle">Terminé&nbsp;!</h2>
+        <p id="resLine">—</p>
+        <button class="btn-primary" id="againBtn" style="max-width:320px;margin:22px auto 0">Nouveau quiz</button>
+      </div>
+      <div id="reviewWrap"></div>
+    </div>
+  </section>
+
+  <!-- ============ RECAP ============ -->
+  <section id="recap" class="view">
+    <span class="eyebrow">Synthèse de cours</span>
+    <h1 class="page" style="margin-top:6px">Récap cours</h1>
+    <p class="page-sub">L'essentiel d'EBIOS Risk Manager et de l'ISO/IEC 27001 pour réviser vite.</p>
+    <div class="toc">
+      <a href="#r-ebios">EBIOS RM</a><a href="#r-ateliers">Les 5 ateliers</a>
+      <a href="#r-iso">ISO 27001 / SMSI</a><a href="#r-fam">Famille ISO 2700x</a>
+      <a href="#r-cross">EBIOS RM ↔ ISO 27005</a>
+    </div>
+
+    <div class="prose">
+      <h2 class="ebios" id="r-ebios"><span class="bar"></span>EBIOS Risk Manager — les bases</h2>
+      <p><strong>EBIOS RM</strong> est la méthode d'appréciation et de traitement du risque numérique publiée par l'<strong>ANSSI</strong>. C'est une <strong>boîte à outils adaptable</strong> : on module la profondeur de chaque atelier selon l'objectif (identifier un socle, viser la conformité, évaluer la menace de l'écosystème, étude préliminaire ou complète, orienter un audit/pentest, orienter la détection d'un SOC…).</p>
+      <p>Elle privilégie une <strong>approche efficace plutôt qu'exhaustive</strong> et combine deux angles : l'<strong>approche par conformité</strong> (le socle de sécurité, point de vue du défenseur) et l'<strong>approche par scénarios</strong> (point de vue de l'attaquant). La démarche est <strong>itérative</strong> et s'organise en deux cycles : un <strong>cycle stratégique</strong> (ateliers 1→3) et un <strong>cycle opérationnel</strong> (atelier 4), bouclés par l'atelier 5.</p>
+
+      <h3>Vocabulaire à ne pas confondre</h3>
+      <ul>
+        <li class="ebios"><strong>Valeur métier</strong> : information ou processus essentiel à la mission (= « bien essentiel » de l'ex-EBIOS 2010).</li>
+        <li class="ebios"><strong>Bien support</strong> : composant sur lequel repose une valeur métier (serveur, réseau, local, équipe, papier…).</li>
+        <li class="ebios"><strong>Bien support critique</strong> : bien support qui apparaît dans les <em>scénarios opérationnels</em> (vecteur d'attaque privilégié).</li>
+        <li class="ebios"><strong>Événement redouté (ER)</strong> : atteinte préjudiciable à une valeur métier, cotée en <strong>gravité</strong>.</li>
+        <li class="ebios"><strong>Source de risque (SR)</strong> / <strong>Objectif visé (OV)</strong> : l'attaquant et ce qu'il cherche → couples <strong>SR/OV</strong>.</li>
+        <li class="ebios"><strong>Partie prenante (PP)</strong> : élément de l'écosystème (= « partie intéressée » en ISO 27005). <strong>PP critique (PPC)</strong> si vecteur d'attaque privilégié.</li>
+        <li class="ebios"><strong>Chemin d'attaque</strong> : suite d'événements (scénarios <em>stratégiques</em>). <strong>Action élémentaire</strong> : action unitaire (scénarios <em>opérationnels</em>).</li>
+      </ul>
+      <div class="callout"><b>Piège classique :</b> une <strong>menace</strong> sans <strong>vulnérabilité</strong> associée ne constitue <strong>pas un risque</strong>. La vulnérabilité seule ne produit aucun dommage tant qu'une menace ne l'exploite pas.</div>
+
+      <h2 class="ebios" id="r-ateliers"><span class="bar"></span>Les 5 ateliers</h2>
+      <div class="steps">
+        <div class="step ebios"><div class="n"></div><div class="body"><h4>Cadrage &amp; socle de sécurité</h4><p>Périmètre métier/technique, valeurs métier, biens supports, événements redoutés + gravité, et <strong>socle de sécurité</strong> (référentiels applicables, écarts, justifications). Approche par conformité. Participants : Direction, Métiers, RSSI, DSI.</p></div></div>
+        <div class="step ebios"><div class="n"></div><div class="body"><h4>Sources de risque</h4><p>Identifier les <strong>SR</strong> et leurs <strong>OV</strong>, retenir les couples <strong>SR/OV</strong> les plus pertinents → <strong>cartographie des sources de risque</strong>.</p></div></div>
+        <div class="step ebios"><div class="n"></div><div class="body"><h4>Scénarios stratégiques</h4><p>Cartographie de la <strong>menace de l'écosystème</strong> (parties prenantes), <strong>chemins d'attaque</strong> de la SR vers l'OV, gravité, puis <strong>mesures de sécurité sur l'écosystème</strong>. 3 types de chemins : direct, par rebond, exclusivement écosystème.</p></div></div>
+        <div class="step ebios"><div class="n"></div><div class="body"><h4>Scénarios opérationnels</h4><p>Modes opératoires techniques (graphe d'attaque : <em>Connaître → Rentrer → Trouver → Exploiter</em>), <strong>actions élémentaires</strong>, biens supports critiques, puis cotation de la <strong>vraisemblance</strong> (V1→V4).</p></div></div>
+        <div class="step ebios"><div class="n"></div><div class="body"><h4>Traitement du risque</h4><p>Synthèse des risques, <strong>stratégie de traitement</strong>, <strong>plan de traitement du risque (PTR)</strong>, <strong>risques résiduels</strong> et cadre de suivi. 4 options (ISO 27005) ; mesures réparties en Gouvernance / Protection / Défense / Résilience.</p></div></div>
+      </div>
+
+      <h3>Échelles clés</h3>
+      <table class="tbl">
+        <tr><th>Vraisemblance (atelier 4)</th><th>Acceptabilité du risque (atelier 5)</th></tr>
+        <tr><td><b>V1</b> peu vraisemblable<br><b>V2</b> vraisemblable<br><b>V3</b> très vraisemblable<br><b>V4</b> quasi-certain / déjà produit</td>
+            <td><b>Faible</b> → acceptable en l'état<br><b>Moyen</b> → tolérable sous contrôle<br><b>Élevé</b> → inacceptable (action court terme)</td></tr>
+      </table>
+      <div class="callout"><b>À retenir :</b> la <strong>gravité</strong> d'un scénario opérationnel = celle du scénario <strong>stratégique</strong> associé (atelier 3). Le risque se positionne sur une matrice <strong>Gravité × Vraisemblance</strong>.</div>
+
+      <h2 class="iso" id="r-iso"><span class="bar"></span>ISO/IEC 27001 &amp; le SMSI</h2>
+      <p>Un <strong>SMSI</strong> (Système de Management de la Sécurité de l'Information) est l'ensemble des <strong>processus et documents</strong> permettant de gérer la sécurité dans un <strong>cycle d'amélioration continue (PDCA)</strong>. L'<strong>ISO/IEC 27001</strong> est la norme <strong>certifiable</strong> qui fixe les <strong>exigences</strong> du SMSI.</p>
+      <h3>Les 3 critères de sécurité (DIC)</h3>
+      <ul>
+        <li class="iso"><strong>Disponibilité</strong> : accessibilité de l'information.</li>
+        <li class="iso"><strong>Intégrité</strong> : exactitude et complétude de l'information.</li>
+        <li class="iso"><strong>Confidentialité</strong> : maîtrise de la diffusion et des accès.</li>
+      </ul>
+      <h3>Structure : clauses 4 à 10 (alignées PDCA)</h3>
+      <table class="tbl">
+        <tr><th>Clause</th><th>Intitulé</th><th>PDCA</th></tr>
+        <tr><td><b>4</b></td><td>Contexte de l'organisation</td><td rowspan="4">Plan</td></tr>
+        <tr><td><b>5</b></td><td>Leadership &amp; engagement</td></tr>
+        <tr><td><b>6</b></td><td>Planification</td></tr>
+        <tr><td><b>7</b></td><td>Support</td></tr>
+        <tr><td><b>8</b></td><td>Fonctionnement / Opération</td><td>Do</td></tr>
+        <tr><td><b>9</b></td><td>Évaluation des performances</td><td>Check</td></tr>
+        <tr><td><b>10</b></td><td>Amélioration</td><td>Act</td></tr>
+      </table>
+      <h3>Annexe A &amp; Déclaration d'applicabilité (DdA / SoA)</h3>
+      <p>L'<strong>Annexe A</strong> de l'ISO 27001:2022 liste les mesures de sécurité, regroupées en <strong>4 thèmes</strong> : <strong>organisationnelles, liées aux personnes, physiques, technologiques</strong> (les recommandations de mise en œuvre détaillées sont dans l'<strong>ISO 27002</strong>).</p>
+      <p>La <strong>Déclaration d'applicabilité (DdA / SoA)</strong> est un <strong>livrable clé et obligatoire</strong> : elle indique pour chaque mesure si elle s'applique (<strong>oui / non / pourquoi</strong>), s'appuie sur les résultats de l'analyse de risque, et peut référencer un autre référentiel que l'ISO 27002.</p>
+      <h3>Gouvernance</h3>
+      <p>La gouvernance = mécanismes, structures et processus pour <strong>diriger, évaluer et surveiller</strong> la sécurité afin qu'elle soutienne les objectifs stratégiques. C'est la <strong>direction</strong> qui définit l'<strong>appétence au risque</strong> (réf. <strong>ISO 37000</strong> et <strong>clause 5</strong> de l'ISO 27001). Pilotage via une <strong>revue de direction</strong> (RSSI, DSI, Juridique, RH, opérations) : validation, arbitrage, évaluation de l'efficacité du SMSI.</p>
+
+      <h2 class="iso" id="r-fam"><span class="bar"></span>Famille ISO 2700x (l'essentiel)</h2>
+      <table class="tbl">
+        <tr><th>Norme</th><th>Objet</th></tr>
+        <tr><td><b>27000</b></td><td>Vue d'ensemble &amp; vocabulaire</td></tr>
+        <tr><td><b>27001</b></td><td>Exigences du SMSI (certifiable)</td></tr>
+        <tr><td><b>27002</b></td><td>Mesures de sécurité (support de la DdA)</td></tr>
+        <tr><td><b>27003</b></td><td>Lignes directrices de mise en œuvre du SMSI</td></tr>
+        <tr><td><b>27004</b></td><td>Surveillance, mesurage, analyse, évaluation</td></tr>
+        <tr><td><b>27005</b></td><td>Gestion des risques liés à la sécurité de l'info</td></tr>
+        <tr><td><b>27701</b></td><td>Management de la protection de la vie privée</td></tr>
+        <tr><td><b>22301</b></td><td>Continuité d'activité</td></tr>
+      </table>
+
+      <h2 class="cross" id="r-cross"><span class="bar"></span>EBIOS RM ↔ ISO 27005:2022</h2>
+      <p>EBIOS RM est compatible avec le processus de l'<strong>ISO 27005</strong> en <strong>5 étapes</strong> + 2 activités transverses (communication &amp; concertation, surveillance &amp; revue) :</p>
+      <table class="tbl">
+        <tr><th>ISO 27005</th><th>Correspondance EBIOS RM</th></tr>
+        <tr><td>1. Établissement du contexte</td><td>Socle de sécurité / exigences des parties intéressées (atelier 1)</td></tr>
+        <tr><td>2. Identification des risques</td><td>ER (at.1), couples SR/OV (at.2), lien ER-SR-VM (at.3)</td></tr>
+        <tr><td>3. Analyse + 4. Évaluation</td><td>Appréciation des risques = ateliers 2, 3 et 4</td></tr>
+        <tr><td>5. Traitement du risque</td><td>Atelier 5</td></tr>
+      </table>
+      <ul>
+        <li class="iso"><strong>Impacts</strong> (EBIOS) = <strong>conséquences</strong> (ISO 27005)</li>
+        <li class="iso"><strong>Partie prenante</strong> (EBIOS) = <strong>partie intéressée</strong> (ISO 27005)</li>
+        <li class="iso"><strong>Besoin de sécurité</strong> (EBIOS) = <strong>objectif de sécurité</strong> (ISO 27005)</li>
+      </ul>
+    </div>
+  </section>
+
+  <!-- ============ MEMO ============ -->
+  <section id="memo" class="view">
+    <span class="eyebrow">Antisèche express</span>
+    <h1 class="page" style="margin-top:6px">Mémo</h1>
+    <p class="page-sub">Tout ce qui se récite par cœur, en une page. Parfait juste avant l'épreuve.</p>
+
+    <div class="memo-grid">
+      <div class="mini">
+        <h4><span class="pip" style="background:var(--ebios)"></span>Les 5 ateliers EBIOS RM</h4>
+        <div class="scale">
+          <div><span class="lv">A1</span>Cadrage &amp; socle de sécurité</div>
+          <div><span class="lv">A2</span>Sources de risque (SR / OV)</div>
+          <div><span class="lv">A3</span>Scénarios stratégiques</div>
+          <div><span class="lv">A4</span>Scénarios opérationnels</div>
+          <div><span class="lv">A5</span>Traitement du risque</div>
+        </div>
+      </div>
+      <div class="mini">
+        <h4><span class="pip" style="background:var(--iso)"></span>Clauses ISO 27001 (4→10)</h4>
+        <div class="scale">
+          <div><span class="lv">4</span>Contexte</div>
+          <div><span class="lv">5</span>Leadership</div>
+          <div><span class="lv">6</span>Planification</div>
+          <div><span class="lv">7</span>Support</div>
+          <div><span class="lv">8</span>Fonctionnement</div>
+          <div><span class="lv">9</span>Évaluation des performances</div>
+          <div><span class="lv">10</span>Amélioration</div>
+        </div>
+      </div>
+      <div class="mini">
+        <h4><span class="pip" style="background:var(--difficile)"></span>Vraisemblance (A4)</h4>
+        <div class="scale">
+          <div><span class="lv">V1</span>Peu vraisemblable</div>
+          <div><span class="lv">V2</span>Vraisemblable</div>
+          <div><span class="lv">V3</span>Très vraisemblable</div>
+          <div><span class="lv">V4</span>Quasi-certain / déjà produit</div>
+        </div>
+      </div>
+      <div class="mini">
+        <h4><span class="pip" style="background:var(--moyen)"></span>Traitement du risque — 4 options</h4>
+        <div class="scale">
+          <div><span class="lv">1</span>Refus / éviter</div>
+          <div><span class="lv">2</span>Réduire</div>
+          <div><span class="lv">3</span>Partager / transférer</div>
+          <div><span class="lv">4</span>Accepter / maintenir</div>
+        </div>
+      </div>
+      <div class="mini">
+        <h4><span class="pip" style="background:var(--accent)"></span>DIC</h4>
+        <div class="scale">
+          <div><span class="lv">D</span>Disponibilité — accessibilité</div>
+          <div><span class="lv">I</span>Intégrité — exactitude/complétude</div>
+          <div><span class="lv">C</span>Confidentialité — diffusion/accès</div>
+        </div>
+      </div>
+      <div class="mini">
+        <h4><span class="pip" style="background:var(--facile)"></span>Plan de traitement — 4 groupes</h4>
+        <div class="scale">
+          <div><span class="lv">G</span>Gouvernance &amp; anticipation</div>
+          <div><span class="lv">P</span>Protection</div>
+          <div><span class="lv">D</span>Défense</div>
+          <div><span class="lv">R</span>Résilience</div>
+        </div>
+      </div>
+      <div class="mini">
+        <h4><span class="pip" style="background:var(--iso)"></span>Annexe A — 4 types de mesures</h4>
+        <div class="scale">
+          <div><span class="lv">•</span>Organisationnelles (PSSI, classification, PCA/PRA)</div>
+          <div><span class="lv">•</span>Liées aux personnes (sensibilisation, antécédents)</div>
+          <div><span class="lv">•</span>Physiques (contrôle d'accès, salle serveur)</div>
+          <div><span class="lv">•</span>Technologiques (MFA, chiffrement, EDR/XDR)</div>
+        </div>
+      </div>
+      <div class="mini">
+        <h4><span class="pip" style="background:var(--ebios)"></span>Acceptabilité (A5)</h4>
+        <div class="scale">
+          <div><span class="lv">🟢</span>Faible → acceptable en l'état</div>
+          <div><span class="lv">🟠</span>Moyen → tolérable sous contrôle</div>
+          <div><span class="lv">🔴</span>Élevé → inacceptable</div>
+        </div>
+      </div>
+    </div>
+
+    <h3 style="font-family:'Bricolage Grotesque';font-weight:700;font-size:1.1rem;margin:26px 0 6px">Glossaire flash</h3>
+    <div class="gloss">
+      <dl class="gterm"><dt>VALEUR MÉTIER</dt><dd>Information ou processus essentiel à la mission (ex-« bien essentiel »).</dd></dl>
+      <dl class="gterm"><dt>BIEN SUPPORT</dt><dd>Composant qui porte une valeur métier (numérique, physique ou organisationnel).</dd></dl>
+      <dl class="gterm"><dt>BIEN SUPPORT CRITIQUE</dt><dd>Bien support qui apparaît dans les scénarios opérationnels.</dd></dl>
+      <dl class="gterm"><dt>ER — ÉVÉNEMENT REDOUTÉ</dt><dd>Atteinte préjudiciable à une valeur métier, cotée en gravité.</dd></dl>
+      <dl class="gterm"><dt>SR / OV</dt><dd>Source de risque / Objectif visé → couples SR-OV (atelier 2).</dd></dl>
+      <dl class="gterm"><dt>PP / PPC</dt><dd>Partie prenante de l'écosystème / partie prenante critique (vecteur privilégié).</dd></dl>
+      <dl class="gterm"><dt>CHEMIN D'ATTAQUE</dt><dd>Suite d'événements — scénarios stratégiques (3 types : direct, rebond, écosystème).</dd></dl>
+      <dl class="gterm"><dt>ACTION ÉLÉMENTAIRE</dt><dd>Action unitaire sur un bien support — scénarios opérationnels.</dd></dl>
+      <dl class="gterm"><dt>SOCLE DE SÉCURITÉ</dt><dd>Référentiels applicables + état d'application + écarts justifiés (approche par conformité).</dd></dl>
+      <dl class="gterm"><dt>SMSI</dt><dd>Processus + documents pour gérer la sécurité en amélioration continue.</dd></dl>
+      <dl class="gterm"><dt>PSSI</dt><dd>Document donnant l'appétence au risque et ses définitions.</dd></dl>
+      <dl class="gterm"><dt>DdA / SoA</dt><dd>Déclaration d'applicabilité : livrable obligatoire, mesures oui/non/pourquoi (réf. ISO 27002).</dd></dl>
+      <dl class="gterm"><dt>PTR (ex-PACS)</dt><dd>Plan de traitement du risque : toutes les mesures à mettre en œuvre.</dd></dl>
+      <dl class="gterm"><dt>RISQUE</dt><dd>Menace × vulnérabilité. Une menace sans vulnérabilité ≠ risque.</dd></dl>
+    </div>
+  </section>
+
+  <footer>Outil de révision personnel — EBIOS Risk Manager (ANSSI) &amp; ISO/IEC 27001. Bon courage pour le QCM 💪</footer>
+</main>
+
+<nav class="bottom">
+  <button data-go="quiz" class="active q">
+    <svg viewBox="0 0 24 24"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>Quiz</button>
+  <button data-go="recap" class="r">
+    <svg viewBox="0 0 24 24"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg>Récap</button>
+  <button data-go="memo" class="m">
+    <svg viewBox="0 0 24 24"><path d="M13 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9z"/><path d="M13 2v7h7"/></svg>Mémo</button>
+</nav>
+
+<script>
+/* ============================ BANQUE DE QUESTIONS ============================ */
+/* theme: 'ebios' | 'iso'  ·  diff: 'facile'|'moyen'|'difficile'|'expert'
+   o = options, a = index de la bonne réponse, e = explication */
+const QUESTIONS = [
+/* ---------- EBIOS RM — FACILE ---------- */
+{t:'ebios',d:'facile',q:"Combien d'ateliers compose la méthode EBIOS Risk Manager ?",o:["3","4","5","7"],a:2,e:"EBIOS RM s'articule en 5 ateliers, du cadrage (1) au traitement du risque (5)."},
+{t:'ebios',d:'facile',q:"Quel organisme publie la méthode EBIOS Risk Manager ?",o:["L'ISO","L'ANSSI","La CNIL","L'ENISA"],a:1,e:"EBIOS RM est la méthode d'appréciation du risque numérique de l'ANSSI."},
+{t:'ebios',d:'facile',q:"L'atelier 1 d'EBIOS RM s'intitule…",o:["Sources de risque","Scénarios stratégiques","Cadrage et socle de sécurité","Traitement du risque"],a:2,e:"L'atelier 1 « Cadrage et socle de sécurité » définit le périmètre, les valeurs métier, les biens supports, les ER et le socle."},
+{t:'ebios',d:'facile',q:"Quels sont les trois besoins de sécurité fondamentaux rappelés dans EBIOS RM ?",o:["Disponibilité, Intégrité, Confidentialité","Authentification, Autorisation, Audit","Prévention, Détection, Réaction","Identification, Protection, Réponse"],a:0,e:"Les besoins de sécurité de base sont la Disponibilité, l'Intégrité et la Confidentialité (la traçabilité est souvent ajoutée)."},
+{t:'ebios',d:'facile',q:"Dans EBIOS RM, une « valeur métier » correspond à…",o:["Un serveur ou un équipement","Une information ou un processus essentiel à la mission","Une mesure de sécurité","Une source de risque"],a:1,e:"La valeur métier est une information ou un processus essentiel ; elle correspond au « bien essentiel » de l'ancienne EBIOS 2010."},
+{t:'ebios',d:'facile',q:"Qu'est-ce qu'un « bien support » dans EBIOS RM ?",o:["Un attaquant potentiel","Le composant sur lequel repose une valeur métier","Un objectif visé par l'attaquant","Un référentiel normatif"],a:1,e:"Le bien support est le composant (serveur, réseau, local, équipe, papier…) sur lequel repose une ou plusieurs valeurs métier."},
+{t:'ebios',d:'facile',q:"Dans quel atelier identifie-t-on les sources de risque (SR) et leurs objectifs visés (OV) ?",o:["Atelier 1","Atelier 2","Atelier 3","Atelier 5"],a:1,e:"L'atelier 2 « Sources de risque » sert à identifier les couples SR/OV les plus pertinents."},
+{t:'ebios',d:'facile',q:"L'atelier 5 d'EBIOS RM porte sur…",o:["Le cadrage","Les sources de risque","Le traitement du risque","Les scénarios opérationnels"],a:2,e:"L'atelier 5 « Traitement du risque » définit la stratégie, le plan de traitement et les risques résiduels."},
+{t:'ebios',d:'facile',q:"Une menace qui n'est associée à aucune vulnérabilité…",o:["Constitue toujours un risque","Ne constitue pas un risque","Devient une vulnérabilité","Est un événement redouté"],a:1,e:"Sans vulnérabilité à exploiter, une menace ne se concrétise pas en risque. La vulnérabilité seule ne crée pas non plus de dommage."},
+{t:'ebios',d:'facile',q:"Combien de niveaux compte l'échelle de vraisemblance utilisée à l'atelier 4 ?",o:["3 (V1 à V3)","4 (V1 à V4)","5 (V1 à V5)","2 (V1 à V2)"],a:1,e:"L'échelle va de V1 (peu vraisemblable) à V4 (quasi-certain / déjà produit)."},
+
+/* ---------- EBIOS RM — MOYEN ---------- */
+{t:'ebios',d:'moyen',q:"Quelle est la donnée de sortie principale de l'atelier 2 ?",o:["La cartographie des risques résiduels","La cartographie des sources de risque (couples SR/OV retenus)","Le plan de traitement du risque","La liste des biens supports critiques"],a:1,e:"L'atelier 2 produit une cartographie des sources de risque, avec les couples SR/OV jugés les plus pertinents."},
+{t:'ebios',d:'moyen',q:"À quel atelier estime-t-on la dangerosité (niveau de menace) des parties prenantes de l'écosystème ?",o:["Atelier 1","Atelier 2","Atelier 3","Atelier 4"],a:2,e:"L'atelier 3 commence par évaluer le niveau de menace des parties prenantes avant de bâtir les scénarios stratégiques."},
+{t:'ebios',d:'moyen',q:"Un « chemin d'attaque » relève des scénarios…",o:["Stratégiques","Opérationnels","De conformité","Résiduels"],a:0,e:"Le chemin d'attaque (suite d'événements de la SR vers l'OV) caractérise les scénarios stratégiques (atelier 3)."},
+{t:'ebios',d:'moyen',q:"Une « action élémentaire » intervient dans les scénarios…",o:["Stratégiques","Opérationnels","Préliminaires","De gouvernance"],a:1,e:"L'action élémentaire (ex. exploiter une vulnérabilité, envoyer un mail piégé) appartient aux scénarios opérationnels (atelier 4)."},
+{t:'ebios',d:'moyen',q:"Que regroupe le « socle de sécurité » établi à l'atelier 1 ?",o:["Les scénarios d'attaque retenus","Les référentiels applicables, leur état d'application et les écarts justifiés","Les risques résiduels acceptés","Les sources de risque internes"],a:1,e:"Le socle liste les référentiels applicables, l'état d'application et l'identification/justification des écarts (approche par conformité)."},
+{t:'ebios',d:'moyen',q:"Quelles sont les 4 options stratégiques de traitement du risque ?",o:["Identifier, Analyser, Évaluer, Traiter","Refus/éviter, Réduire, Partager/transférer, Accepter","Prévenir, Détecter, Corriger, Restaurer","Plan, Do, Check, Act"],a:1,e:"Les 4 options (alignées ISO 27005) : refus/évitement, réduction, partage/transfert, acceptation/maintien."},
+{t:'ebios',d:'moyen',q:"Le plan de traitement du risque répartit les mesures en quatre groupes :",o:["DIC + Traçabilité","Plan, Do, Check, Act","Gouvernance, Protection, Défense, Résilience","Préventif, Détectif, Correctif, Dissuasif"],a:2,e:"Les 4 groupes de mesures du PTR : Gouvernance & anticipation, Protection, Défense, Résilience."},
+{t:'ebios',d:'moyen',q:"Quels participants sont attendus à l'atelier 1 ?",o:["Uniquement le RSSI","Direction, Métiers, RSSI, DSI","Seulement la DSI et les développeurs","Les auditeurs externes"],a:1,e:"L'atelier 1 réunit la Direction (décideurs), les Métiers, le RSSI et le DSI."},
+{t:'ebios',d:'moyen',q:"La gravité d'un scénario opérationnel (atelier 4) est…",o:["Recalculée indépendamment","Égale à la gravité du scénario stratégique associé","Toujours fixée à 4","La moyenne des vraisemblances"],a:1,e:"La gravité du scénario opérationnel reprend celle du scénario stratégique évaluée à l'atelier 3."},
+{t:'ebios',d:'moyen',q:"Le cycle dit « stratégique » d'EBIOS RM correspond aux ateliers…",o:["1 à 3","2 à 4","3 à 5","1 et 5"],a:0,e:"Le cycle stratégique couvre les ateliers 1 à 3 ; l'atelier 4 relève du cycle opérationnel."},
+{t:'ebios',d:'moyen',q:"À l'atelier 3, combien de types de chemins d'attaque distingue-t-on ?",o:["2","3","4","5"],a:1,e:"Trois types : attaque directe sur l'objet de l'étude, par rebond via l'écosystème, et visant exclusivement l'écosystème."},
+{t:'ebios',d:'moyen',q:"Quel est l'objectif central de l'atelier 4 ?",o:["Définir l'appétence au risque","Décrire les modes opératoires techniques et coter leur vraisemblance","Identifier les valeurs métier","Choisir la stratégie d'acceptation"],a:1,e:"L'atelier 4 décrit les scénarios opérationnels (modes opératoires/actions élémentaires) et évalue leur vraisemblance."},
+{t:'ebios',d:'moyen',q:"Sur quel principe repose le risque positionné dans la matrice EBIOS RM ?",o:["Coût × Délai","Gravité × Vraisemblance","Menace × Référentiel","Impact × Budget"],a:1,e:"Le risque est positionné selon deux axes : la gravité et la vraisemblance."},
+{t:'ebios',d:'moyen',q:"Le « bien support critique » se définit comme un bien support qui…",o:["Coûte le plus cher","Apparaît dans les scénarios opérationnels","Appartient à un tiers","N'a aucune vulnérabilité"],a:1,e:"Les biens supports critiques sont ceux qui apparaissent dans les scénarios opérationnels (vecteurs privilégiés)."},
+
+/* ---------- EBIOS RM — DIFFICILE ---------- */
+{t:'ebios',d:'difficile',q:"En cas d'écarts trop significatifs au socle de sécurité à l'atelier 1, il est recommandé de…",o:["Poursuivre quand même tous les ateliers","Ne pas poursuivre et concentrer les efforts sur le renforcement du socle","Passer directement à l'atelier 5","Accepter tous les risques"],a:1,e:"Si les écarts sont trop importants, on ne poursuit pas l'appréciation : inutile d'étudier des risques sophistiqués si le socle est vulnérable aux risques courants."},
+{t:'ebios',d:'difficile',q:"La gravité d'un scénario stratégique provient…",o:["De la vraisemblance des actions élémentaires","De l'événement redouté associé à l'OV (croisement OV/ER de fin d'atelier 2)","Du coût des mesures","Du nombre de parties prenantes"],a:1,e:"On utilise la gravité de l'ER associé à l'OV lors du croisement OV/ER réalisé en fin d'atelier 2."},
+{t:'ebios',d:'difficile',q:"Pour explorer un champ de risque pertinent, combien de chemins d'attaque par couple SR/OV sont généralement suffisants ?",o:["1 seul obligatoirement","1 à 3","5 à 8","Autant que possible, exhaustivité requise"],a:1,e:"Un à trois chemins par couple SR/OV suffisent généralement (ex. attaque directe, par rebond, parties prenantes), en privilégiant la variété."},
+{t:'ebios',d:'difficile',q:"Si l'atelier 4 n'est pas réalisé (étude préliminaire), quel indicateur sert à estimer la vraisemblance du scénario stratégique ?",o:["Le coût de la mesure","La pertinence du couple SR/OV","La taille de l'organisation","Le nombre de biens supports"],a:1,e:"Quand l'atelier 4 est omis, la pertinence du couple SR/OV est un bon indicateur de la vraisemblance du scénario stratégique."},
+{t:'ebios',d:'difficile',q:"On ne peut réduire le niveau de dangerosité d'une partie prenante pour la suite de l'analyse que si…",o:["La mesure est planifiée pour plus tard","La mesure est effectivement mise en œuvre avant la suite de l'analyse","La direction l'a validée","Le risque est déjà acceptable"],a:1,e:"Anticiper l'effet d'une mesure non encore appliquée fausserait le niveau de risque actuel : la mesure doit être réellement en place."},
+{t:'ebios',d:'difficile',q:"Un élément placé sous la responsabilité du commanditaire de l'étude est considéré comme…",o:["Une partie prenante","Un bien support","Une source de risque","Un objectif visé"],a:1,e:"Si le commanditaire en est responsable, c'est un bien support ; sinon c'est une partie prenante de l'écosystème."},
+{t:'ebios',d:'difficile',q:"La vraisemblance globale d'un scénario opérationnel est souvent estimée en considérant…",o:["Le mode opératoire de moindre effort pour la source de risque","Le mode opératoire le plus coûteux","La moyenne arithmétique stricte","Uniquement la dernière action élémentaire"],a:0,e:"On privilégie le mode opératoire de moindre effort pour l'attaquant, en confrontant ses ressources/motivation au socle et aux vulnérabilités."},
+{t:'ebios',d:'difficile',q:"Dans le graphe d'attaque d'un scénario opérationnel, quelle est la séquence type des phases ?",o:["Rentrer → Connaître → Exploiter → Trouver","Connaître → Rentrer → Trouver → Exploiter","Trouver → Exploiter → Rentrer → Connaître","Exploiter → Trouver → Connaître → Rentrer"],a:1,e:"Les phases s'enchaînent : Connaître, Rentrer, Trouver, puis Exploiter."},
+{t:'ebios',d:'difficile',q:"À l'atelier 5, le niveau de risque « Moyen » est généralement qualifié de…",o:["Acceptable en l'état","Tolérable sous contrôle","Inacceptable","Négligeable"],a:1,e:"Faible = acceptable en l'état ; Moyen = tolérable sous contrôle (suivi + actions moyen/long terme) ; Élevé = inacceptable."},
+{t:'ebios',d:'difficile',q:"Quels éléments alimentent l'atelier 5 en entrée ?",o:["Uniquement les scénarios opérationnels","Socle (A1), mesures écosystème (A3), scénarios stratégiques (A3) et opérationnels (A4)","Seulement la PSSI","La DdA de l'ISO 27001"],a:1,e:"L'atelier 5 reçoit en entrée le socle de l'atelier 1, les mesures sur l'écosystème et les scénarios stratégiques (atelier 3) ainsi que les scénarios opérationnels (atelier 4)."},
+{t:'ebios',d:'difficile',q:"Les mesures de sécurité identifiées et mises en œuvre lors d'études précédentes…",o:["Sont ignorées dans une nouvelle étude","Font désormais partie du socle de sécurité de l'organisation","Deviennent des sources de risque","Remplacent l'atelier 1"],a:1,e:"Ces mesures intègrent le socle de sécurité et pourront être éprouvées dans les ateliers d'appréciation suivants."},
+{t:'ebios',d:'difficile',q:"Pourquoi EBIOS RM revendique une « approche efficace plutôt qu'exhaustive » ?",o:["Pour réduire les coûts de licence","Pour se concentrer sur les scénarios/parties prenantes les plus pertinents par itérations","Parce que l'exhaustivité est interdite par l'ANSSI","Pour éviter de documenter les risques"],a:1,e:"À chaque atelier on retient les éléments les plus pertinents (ER les plus graves, SR/OV pertinents, parties prenantes les plus menaçantes…), par itérations."},
+
+/* ---------- EBIOS RM — EXPERT ---------- */
+{t:'ebios',d:'expert',q:"Le plan de traitement du risque (PTR) est l'appellation qui a remplacé…",o:["La PSSI","Le PACS (plan d'amélioration continue de la sécurité)","La DdA","Le SMSI"],a:1,e:"Le plan de traitement du risque était anciennement noté PACS (plan d'amélioration continue de la sécurité)."},
+{t:'ebios',d:'expert',q:"Dans la pyramide du management du risque numérique, l'atelier 1 correspond surtout…",o:["Aux deux premiers étages (conformité / hygiène), point de vue défense","Au sommet (risques sophistiqués)","À l'écosystème uniquement","Au traitement résiduel"],a:0,e:"L'atelier 1 suit une approche par conformité, correspondant aux deux premiers étages de la pyramide, du point de vue de la défense."},
+{t:'ebios',d:'expert',q:"Lorsqu'un même couple SR/OV peut mener à plusieurs ER, quelle gravité retient-on pour le scénario stratégique ?",o:["La plus faible","La moyenne","La plus forte","Celle choisie par la direction"],a:2,e:"Truc & astuce de l'atelier 3 : si un SR/OV mène à plusieurs ER, on retient la gravité la plus forte."},
+{t:'ebios',d:'expert',q:"L'estimation directe de la vraisemblance globale (méthode « express »), sans coter chaque action élémentaire…",o:["Est plus précise","Perd en précision par rapport à la cotation des vraisemblances élémentaires","Est interdite par la méthode","Donne toujours V4"],a:1,e:"L'estimation directe est possible mais perd en précision face à la cotation détaillée des actions élémentaires."},
+{t:'ebios',d:'expert',q:"Quelle granularité adopter pour les actions élémentaires des scénarios opérationnels ?",o:["Toujours la plus fine possible","Une granularité à géométrie variable, selon la maturité et la profondeur d'analyse visée","Toujours macroscopique","Imposée par l'ISO 27002"],a:1,e:"La granularité s'ajuste à la maturité de l'organisation et à la profondeur visée (du macro « type WannaCry » au plus affiné)."},
+{t:'ebios',d:'expert',q:"Quelle activité conclut l'atelier 5 et assure le maintien en condition de sécurité dans la durée ?",o:["La définition des valeurs métier","La mise en place du cadre de suivi des risques (comité de pilotage, indicateurs, recalcul)","L'identification des sources de risque","La rédaction de la PSSI"],a:1,e:"L'atelier 5 se termine par la mise en place du cadre de suivi : comité de pilotage, suivi des mesures et indicateurs, recalcul du risque."},
+
+/* ---------- ISO 27001 / SMSI — FACILE ---------- */
+{t:'iso',d:'facile',q:"Que signifie l'acronyme SMSI ?",o:["Système de Management de la Sûreté Industrielle","Système de Management de la Sécurité de l'Information","Suivi des Mesures de Sécurité Informatique","Standard de Maturité en Sécurité de l'Information"],a:1,e:"SMSI = Système de Management de la Sécurité de l'Information : processus et documents gérés en amélioration continue."},
+{t:'iso',d:'facile',q:"Quelle norme de la famille définit les exigences certifiables d'un SMSI ?",o:["ISO 27000","ISO 27001","ISO 27002","ISO 27005"],a:1,e:"L'ISO/IEC 27001 fixe les exigences du SMSI et c'est la norme sur laquelle on se certifie."},
+{t:'iso',d:'facile',q:"L'ISO 27001 critère « Intégrité » désigne…",o:["L'accessibilité de l'information","L'exactitude et la complétude de l'information","La confidentialité des accès","La traçabilité des connexions"],a:1,e:"L'intégrité = exactitude et complétude de l'information."},
+{t:'iso',d:'facile',q:"Le critère « Disponibilité » correspond à…",o:["L'accessibilité de l'information","La non-divulgation","L'exactitude des données","La journalisation"],a:0,e:"La disponibilité = accessibilité de l'information par les personnes/processus autorisés."},
+{t:'iso',d:'facile',q:"À quel modèle d'amélioration continue les clauses 4 à 10 de l'ISO 27001 sont-elles alignées ?",o:["DICT","PDCA (Plan-Do-Check-Act)","OSI","RACI"],a:1,e:"La structure des clauses suit le cycle PDCA : Plan / Do / Check / Act."},
+{t:'iso',d:'facile',q:"Quelle norme de la famille traite spécifiquement de la gestion des risques ?",o:["ISO 27000","ISO 27002","ISO 27005","ISO 27701"],a:2,e:"L'ISO/IEC 27005 porte sur la gestion des risques liés à la sécurité de l'information."},
+{t:'iso',d:'facile',q:"La norme ISO 27000 fournit principalement…",o:["Les exigences du SMSI","La vue d'ensemble et le vocabulaire","La liste des mesures de sécurité","Les règles de continuité"],a:1,e:"L'ISO 27000 donne la vue d'ensemble et le vocabulaire de la famille."},
+{t:'iso',d:'facile',q:"Le MFA (authentification multifacteur) est une mesure de l'Annexe A de type…",o:["Organisationnelle","Physique","Technologique","Liée aux personnes"],a:2,e:"Le MFA, le chiffrement ou l'EDR/XDR sont des mesures technologiques."},
+{t:'iso',d:'facile',q:"La sensibilisation et la formation des collaborateurs relèvent de mesures…",o:["Physiques","Liées aux personnes","Technologiques","De gouvernance financière"],a:1,e:"Sensibilisation, formation, vérification d'antécédents : mesures liées aux personnes."},
+{t:'iso',d:'facile',q:"Combien de types de mesures distingue l'Annexe A de l'ISO 27001:2022 ?",o:["2","3","4","14"],a:2,e:"Quatre thèmes : organisationnelles, liées aux personnes, physiques et technologiques."},
+
+/* ---------- ISO 27001 / SMSI — MOYEN ---------- */
+{t:'iso',d:'moyen',q:"Quelle clause de l'ISO 27001 traite du « Contexte de l'organisation » ?",o:["Clause 4","Clause 5","Clause 6","Clause 8"],a:0,e:"La clause 4 concerne le contexte de l'organisation (enjeux, parties intéressées, périmètre)."},
+{t:'iso',d:'moyen',q:"La clause 5 de l'ISO 27001 porte sur…",o:["Le support","Le leadership et l'engagement","L'évaluation des performances","L'amélioration"],a:1,e:"La clause 5 « Leadership & engagement » implique la direction et est rattachée à la gouvernance."},
+{t:'iso',d:'moyen',q:"Qu'est-ce que la Déclaration d'applicabilité (DdA / SoA) ?",o:["Un document optionnel de communication","Un livrable clé et obligatoire listant l'applicabilité des mesures (oui/non/pourquoi)","La politique de mots de passe","Le rapport d'audit annuel"],a:1,e:"La DdA est un livrable clé et obligatoire : elle justifie pour chaque mesure son applicabilité (oui/non/pourquoi)."},
+{t:'iso',d:'moyen',q:"Sur quel référentiel la DdA s'appuie-t-elle principalement pour les mesures ?",o:["ISO 27005","ISO 27002","ISO 9001","ISO 31000"],a:1,e:"La DdA s'appuie sur les mesures de l'ISO 27002 (mais peut référencer un autre référentiel)."},
+{t:'iso',d:'moyen',q:"Qui, dans l'organisation, définit l'appétence au risque ?",o:["Le RSSI seul","La direction","L'auditeur externe","Le DPO"],a:1,e:"C'est la direction qui définit l'appétence au risque (gouvernance, clause 5 / ISO 37000)."},
+{t:'iso',d:'moyen',q:"La clause 9 de l'ISO 27001 correspond à quelle phase du PDCA ?",o:["Plan","Do","Check","Act"],a:2,e:"La clause 9 « Évaluation des performances » correspond au Check du PDCA."},
+{t:'iso',d:'moyen',q:"La clause 10 « Amélioration » correspond à quelle phase du PDCA ?",o:["Plan","Do","Check","Act"],a:3,e:"La clause 10 « Amélioration » correspond au Act du PDCA."},
+{t:'iso',d:'moyen',q:"Dans le cours, la PSSI est décrite comme le document qui donne…",o:["La liste des serveurs","L'appétence au risque et ses définitions","Le planning des audits","Le budget sécurité"],a:1,e:"La PSSI est le document donnant l'appétence au risque et ses définitions."},
+{t:'iso',d:'moyen',q:"Quelle norme de la famille concerne la continuité d'activité ?",o:["ISO 27701","ISO 22301","ISO 27004","ISO 27003"],a:1,e:"L'ISO 22301 traite du management de la continuité d'activité."},
+{t:'iso',d:'moyen',q:"La norme ISO 27701 porte sur…",o:["La continuité d'activité","Le management de la protection de la vie privée","La surveillance et le mesurage","La santé"],a:1,e:"L'ISO 27701 étend le SMSI au management de la protection de la vie privée (PIMS)."},
+{t:'iso',d:'moyen',q:"La revue de direction du SMSI réunit typiquement…",o:["Uniquement la DSI","RSSI, DSI, Juridique, RH, opérations","Les seuls auditeurs","Les clients de l'entreprise"],a:1,e:"La revue de direction associe RSSI, DSI, Juridique, RH et opérations pour valider et arbitrer."},
+{t:'iso',d:'moyen',q:"Le PCA/PRA (plan de continuité / reprise d'activité) est une mesure de type…",o:["Technologique","Physique","Organisationnelle","Liée aux personnes"],a:2,e:"Le PCA/PRA, la classification de l'information et la PSSI sont des mesures organisationnelles."},
+{t:'iso',d:'moyen',q:"Le chiffrement des données est une mesure de l'Annexe A de type…",o:["Organisationnelle","Technologique","Physique","Liée aux personnes"],a:1,e:"Le chiffrement est une mesure technologique."},
+{t:'iso',d:'moyen',q:"La sécurisation de la salle serveur et le contrôle d'accès périmétrique sont des mesures…",o:["Technologiques","Physiques","Organisationnelles","Liées aux personnes"],a:1,e:"Ce sont des mesures physiques (contrôle d'accès, supports de stockage, salle serveur)."},
+
+/* ---------- ISO 27001 / SMSI — DIFFICILE ---------- */
+{t:'iso',d:'difficile',q:"Quelle est la différence majeure entre l'ISO 27001 et l'ISO 27002 ?",o:["27001 = mesures détaillées, 27002 = exigences","27001 = exigences certifiables du SMSI, 27002 = recommandations de mise en œuvre des mesures","Elles sont identiques","27002 est certifiable, pas 27001"],a:1,e:"On se certifie sur l'ISO 27001 (exigences) ; l'ISO 27002 détaille les recommandations de mise en œuvre des mesures (support de la DdA)."},
+{t:'iso',d:'difficile',q:"Quel ordre des clauses 6, 7, 8 est correct ?",o:["6 Support, 7 Planification, 8 Opération","6 Planification, 7 Support, 8 Fonctionnement","6 Fonctionnement, 7 Planification, 8 Support","6 Leadership, 7 Contexte, 8 Support"],a:1,e:"Clause 6 = Planification, clause 7 = Support, clause 8 = Fonctionnement / Opération."},
+{t:'iso',d:'difficile',q:"Quelles clauses de l'ISO 27001 sont rattachées à la phase « Plan » du PDCA ?",o:["Clauses 4 à 7","Clauses 8 et 9","Clause 10 seule","Clauses 9 et 10"],a:0,e:"La phase Plan regroupe les clauses 4 (Contexte), 5 (Leadership), 6 (Planification) et 7 (Support)."},
+{t:'iso',d:'difficile',q:"La DdA peut-elle utiliser un autre référentiel que l'ISO 27002 ?",o:["Non, jamais","Oui, elle peut s'appuyer sur un autre référentiel de mesures","Seulement avec accord de la CNIL","Uniquement pour le secteur santé"],a:1,e:"La DdA peut utiliser un autre référentiel que l'ISO 27002, dès lors que l'applicabilité des mesures est justifiée."},
+{t:'iso',d:'difficile',q:"La DdA exploite quelles informations issues du SMSI pour justifier les mesures ?",o:["Le budget marketing","Les résultats de l'analyse de risque","Les CV des employés","Le chiffre d'affaires"],a:1,e:"La DdA peut s'appuyer sur les informations de l'analyse de risque pour justifier l'applicabilité des mesures."},
+{t:'iso',d:'difficile',q:"Selon le cours, à quelle norme de gouvernance générale la gouvernance du SMSI fait-elle référence (en plus de la clause 5) ?",o:["ISO 9001","ISO 37000","ISO 31000","ISO 14001"],a:1,e:"La gouvernance est associée à l'ISO 37000 (gouvernance des organisations) et à la clause 5 de l'ISO 27001."},
+{t:'iso',d:'difficile',q:"Dans le cours, un « actif métier » est défini comme…",o:["Un composant matériel (PC, serveur)","Des données et processus essentiels à la mission, non tangibles","Une mesure de sécurité","Un référentiel normatif"],a:1,e:"L'actif métier = données et processus essentiels à la réalisation de la mission, de nature non tangible (à distinguer du bien support tangible)."},
+{t:'iso',d:'difficile',q:"Quel est le rôle d'une revue de direction trimestrielle du SMSI ?",o:["Coder les correctifs","Valider, arbitrer et évaluer l'efficacité du SMSI / alignement à l'appétence au risque","Réaliser les tests d'intrusion","Rédiger les contrats clients"],a:1,e:"La revue de direction évalue l'efficacité du SMSI, vérifie l'alignement à l'appétence au risque, valide et arbitre."},
+{t:'iso',d:'difficile',q:"Pourquoi le SMSI est-il qualifié de démarche d'« amélioration continue » ?",o:["Parce qu'il change de norme chaque année","Parce qu'il boucle un cycle PDCA pour s'adapter aux évolutions des risques","Parce qu'il supprime les risques","Parce qu'il est audité une seule fois"],a:1,e:"Le SMSI fonctionne en cycle PDCA : on planifie, met en œuvre, évalue puis améliore en continu."},
+
+/* ---------- ISO 27001 / SMSI — EXPERT ---------- */
+{t:'iso',d:'expert',q:"Laquelle de ces normes traite de la surveillance, du mesurage, de l'analyse et de l'évaluation ?",o:["ISO 27002","ISO 27003","ISO 27004","ISO 27005"],a:2,e:"L'ISO 27004 porte sur la surveillance, le mesurage, l'analyse et l'évaluation du SMSI."},
+{t:'iso',d:'expert',q:"L'ISO 27003 apporte principalement…",o:["Le vocabulaire","Les lignes directrices de mise en œuvre du SMSI","Les mesures de l'annexe A","La gestion des risques"],a:1,e:"L'ISO 27003 fournit des lignes directrices pour la mise en œuvre du SMSI."},
+{t:'iso',d:'expert',q:"La DdA est qualifiée de « livrable clé et obligatoire » : que se passe-t-il si une mesure de l'Annexe A est exclue ?",o:["L'exclusion est interdite","L'exclusion est possible mais doit être justifiée (pourquoi)","Il faut changer de norme","La certification est automatique"],a:1,e:"Une mesure peut être déclarée non applicable, à condition de justifier ce choix (logique oui/non/pourquoi de la DdA)."},
+{t:'iso',d:'expert',q:"Entre « actif métier » et « bien support », lequel est tangible selon le cours ?",o:["L'actif métier","Le bien support","Les deux","Aucun"],a:1,e:"Le bien support (PC, serveurs, personnes, papier…) est tangible/concret ; l'actif métier (données, processus) est non tangible."},
+
+/* ---------- CROISEMENT EBIOS RM / ISO 27005 ---------- */
+{t:'iso',d:'moyen',q:"Dans EBIOS RM, à quoi correspond une « partie prenante » au sens de l'ISO 27005 ?",o:["Une source de risque","Une partie intéressée","Un bien support","Un événement redouté"],a:1,e:"La partie prenante d'EBIOS RM correspond à la « partie intéressée » de l'ISO 27005."},
+{t:'iso',d:'difficile',q:"En ISO 27005, le « besoin de sécurité » d'EBIOS RM est appelé…",o:["Objectif de sécurité","Conséquence","Vraisemblance","Mesure de traitement"],a:0,e:"Le besoin de sécurité (D, I, C, traçabilité) correspond à l'« objectif de sécurité » dans l'ISO 27005."},
+{t:'iso',d:'difficile',q:"En ISO 27005, l'« impact » d'EBIOS RM se traduit par le terme…",o:["Vraisemblance","Conséquence","Menace","Appétence"],a:1,e:"L'impact (EBIOS) est exprimé comme une « conséquence » dans l'ISO 27005, sa criticité donnant la gravité."},
+{t:'iso',d:'moyen',q:"Combien d'étapes compte le processus d'appréciation/traitement du risque selon l'ISO 27005:2022 ?",o:["3","4","5","7"],a:2,e:"Cinq étapes : établissement du contexte, identification, analyse, évaluation et traitement du risque (+ 2 activités transverses)."},
+{t:'iso',d:'difficile',q:"Quelles deux activités transverses accompagnent le processus ISO 27005 ?",o:["Audit et certification","Communication & concertation, surveillance & revue","Plan & Do","Chiffrement & sauvegarde"],a:1,e:"Deux activités transverses : la communication & concertation, et la surveillance & revue."},
+{t:'iso',d:'difficile',q:"À quelle étape de l'ISO 27005 correspond le socle de sécurité d'EBIOS RM (atelier 1) ?",o:["Identification des risques","Établissement du contexte / exigences des parties intéressées","Traitement du risque","Évaluation du risque"],a:1,e:"Le socle de sécurité s'apparente à l'établissement du contexte et à l'identification des exigences des parties intéressées (ISO 27005)."},
+{t:'iso',d:'expert',q:"Dans la correspondance ISO 27005, l'« appréciation des risques » d'EBIOS RM recouvre quels ateliers ?",o:["Ateliers 1 et 5","Ateliers 2, 3 et 4","Atelier 1 seul","Tous les ateliers"],a:1,e:"L'appréciation des risques correspond aux ateliers 2 (sources), 3 (scénarios stratégiques) et 4 (scénarios opérationnels)."},
+{t:'iso',d:'moyen',q:"Un « scénario de risque » (ISO 27005 / EBIOS RM) est…",o:["Une simple liste de vulnérabilités","Une séquence d'événements de la cause initiale à la conséquence indésirable","Un type de mesure","Un audit de conformité"],a:1,e:"C'est une séquence/combinaison d'événements menant de la cause initiale à la conséquence indésirable (de la SR à l'OV en EBIOS RM)."},
+
+/* ---------- EBIOS RM — complément (mix niveaux) ---------- */
+{t:'ebios',d:'facile',q:"Lequel de ces éléments est un exemple d'objectif visé (OV) d'une source de risque ?",o:["Un serveur de fichiers","Voler des informations pour un avantage concurrentiel","Une politique de mot de passe","Un audit PASSI"],a:1,e:"L'OV est le but de l'attaquant, ex. « exfiltrer des informations pour obtenir un avantage concurrentiel »."},
+{t:'ebios',d:'moyen',q:"Quel atelier introduit la cartographie de menace numérique de l'écosystème (souvent en radar) ?",o:["Atelier 1","Atelier 2","Atelier 3","Atelier 4"],a:2,e:"L'atelier 3 évalue la dangerosité des parties prenantes, représentée par exemple sous forme de radar."},
+{t:'ebios',d:'moyen',q:"Quel référentiel ferait partie du « socle de sécurité » au titre des normes ?",o:["La famille ISO 27000","Le RGPD","Le guide d'hygiène ANSSI","La LPM"],a:0,e:"Le socle distingue référentiels externes, internes (PSSI), normes (famille ISO 27000) et réglementations (RGPD, NIS, LPM, RGS…)."},
+{t:'ebios',d:'difficile',q:"Parmi ces éléments, lequel n'est PAS une donnée de sortie de l'atelier 1 ?",o:["Les événements redoutés et leur gravité","Le socle de sécurité","La vraisemblance des scénarios opérationnels","Le périmètre métier et technique"],a:2,e:"La vraisemblance des scénarios opérationnels est évaluée à l'atelier 4, pas en sortie de l'atelier 1."},
+{t:'ebios',d:'expert',q:"À l'atelier 4, la vraisemblance élémentaire confronte les ressources/motivation de la SR à…",o:["Au seul budget de l'organisation","Au socle de sécurité et au niveau de vulnérabilité de l'écosystème","À la gravité de l'ER","À la PSSI uniquement"],a:1,e:"On confronte les ressources/motivation présumées de la source de risque au socle de sécurité et aux vulnérabilités de l'écosystème (surface d'attaque)."},
+{t:'ebios',d:'moyen',q:"Lequel de ces usages relève d'EBIOS RM ?",o:["Calculer la paie","Orienter un audit ou un test d'intrusion","Gérer les congés","Rédiger un contrat commercial"],a:1,e:"Parmi les usages : orienter un audit/pentest, orienter la détection d'un SOC, viser la conformité, étude préliminaire ou complète…"},
+{t:'ebios',d:'difficile',q:"L'événement « intermédiaire » dans un chemin d'attaque correspond généralement à…",o:["Une mesure de sécurité","Un événement portant sur une partie prenante de l'écosystème (attaque par rebond)","La gravité finale","Le socle de sécurité"],a:1,e:"Dans une logique de moindre effort, certains chemins passent par des parties prenantes en générant des événements intermédiaires (rebond)."},
+{t:'ebios',d:'facile',q:"Dans le plan de traitement, à quel groupe rattacher « gestion de crise cyber et reprise d'activité » ?",o:["Gouvernance","Protection","Défense","Résilience"],a:3,e:"Continuité, reprise d'activité et gestion de crise relèvent de la Résilience."},
+{t:'ebios',d:'moyen',q:"À quel groupe de mesures rattacher « surveillance d'événements, détection et réponse à incident » ?",o:["Gouvernance","Protection","Défense","Résilience"],a:2,e:"La surveillance, la détection/classification d'incidents et la réponse relèvent de la Défense."},
+{t:'ebios',d:'moyen',q:"À quel groupe rattacher « gestion de l'authentification et du contrôle d'accès » ?",o:["Gouvernance","Protection","Défense","Résilience"],a:1,e:"Authentification/contrôle d'accès, sécurité physique et maintien en condition de sécurité relèvent de la Protection."},
+{t:'ebios',d:'expert',q:"À quel groupe rattacher « processus d'homologation et maîtrise de l'écosystème » ?",o:["Gouvernance et anticipation","Protection","Défense","Résilience"],a:0,e:"L'organisation du management du risque, l'homologation et la maîtrise de l'écosystème relèvent de la Gouvernance & anticipation."},
+
+/* ---------- ISO/SMSI — complément ---------- */
+{t:'iso',d:'facile',q:"La confidentialité, au sens de l'ISO 27001, consiste à…",o:["Garantir l'accessibilité","Gérer la diffusion et les accès à l'information","Assurer l'exactitude des données","Sauvegarder les données"],a:1,e:"La confidentialité = maîtrise de la diffusion et des accès (information non divulguée à des entités non autorisées)."},
+{t:'iso',d:'moyen',q:"Quelle clause concerne « l'évaluation des performances » du SMSI (audits internes, indicateurs) ?",o:["Clause 7","Clause 8","Clause 9","Clause 10"],a:2,e:"La clause 9 « Évaluation des performances » couvre la surveillance, la mesure, l'audit interne et la revue de direction."},
+{t:'iso',d:'moyen',q:"La clause 8 de l'ISO 27001 traite…",o:["Du contexte","Du fonctionnement / de l'opération (mise en œuvre)","De l'amélioration","Du leadership"],a:1,e:"La clause 8 « Fonctionnement / Opération » correspond au Do du PDCA (mise en œuvre opérationnelle)."},
+{t:'iso',d:'difficile',q:"Quelle clause est le pivot de la « gouvernance » du SMSI ?",o:["Clause 4","Clause 5","Clause 9","Clause 10"],a:1,e:"La clause 5 « Leadership & engagement » est le pivot de la gouvernance (implication de la direction, appétence au risque)."},
+{t:'iso',d:'expert',q:"Quelle affirmation est correcte concernant la famille ISO 2700x ?",o:["L'ISO 27002 est certifiable","L'ISO 27005 fixe les exigences du SMSI","L'ISO 27001 est certifiable et s'appuie sur l'analyse de risque (27005) et les mesures (27002)","L'ISO 27000 contient l'annexe A"],a:2,e:"On se certifie sur l'ISO 27001 ; elle s'articule avec l'ISO 27005 (risques) et l'ISO 27002 (mesures, support de la DdA)."},
+{t:'iso',d:'difficile',q:"L'EDR/XDR est cité comme exemple de mesure…",o:["Organisationnelle","Physique","Technologique","Liée aux personnes"],a:2,e:"EDR/XDR, MFA et chiffrement sont des mesures technologiques de l'Annexe A."},
+];
+
+/* ============================ ÉTAT ============================ */
+const state = { theme:'all', diff:'all', len:20, shuffleOpt:true,
+  pool:[], order:[], idx:0, score:0, seen:0, locked:false, review:[] };
+
+const $=s=>document.querySelector(s), $$=s=>document.querySelectorAll(s);
+const store = {
+  get(k,f){ try{const v=localStorage.getItem(k);return v===null?f:JSON.parse(v)}catch(e){return f} },
+  set(k,v){ try{localStorage.setItem(k,JSON.stringify(v))}catch(e){} }
+};
+
+/* ============================ NAVIGATION ============================ */
+function go(view){
+  $$('.view').forEach(v=>v.classList.toggle('active',v.id===view));
+  $$('.nav-desktop button').forEach(b=>b.classList.toggle('active',b.dataset.go===view));
+  $$('nav.bottom button').forEach(b=>b.classList.toggle('active',b.dataset.go===view));
+  window.scrollTo({top:0,behavior:'smooth'});
+}
+$$('[data-go]').forEach(b=>b.addEventListener('click',()=>go(b.dataset.go)));
+
+/* ============================ SETUP ============================ */
+function chipGroup(sel,key,parse){
+  const box=$(sel);
+  box.addEventListener('click',e=>{
+    const b=e.target.closest('.chip'); if(!b)return;
+    box.querySelectorAll('.chip').forEach(c=>{c.classList.remove('on','all','ebios','iso','f','m','d','e');});
+    b.classList.add('on');
+    // re-apply colour class
+    const v=b.dataset[key];
+    const cls={all:'all',ebios:'ebios',iso:'iso',facile:'f',moyen:'m',difficile:'d',expert:'e'}[v]||'all';
+    b.classList.add(cls);
+    state[key]=parse(v);
+    updatePool();
+  });
+}
+chipGroup('#themeChips','theme',v=>v);
+chipGroup('#diffChips','diff',v=>v);
+$('#lenChips').addEventListener('click',e=>{
+  const b=e.target.closest('.chip'); if(!b)return;
+  $('#lenChips').querySelectorAll('.chip').forEach(c=>c.classList.remove('on','all'));
+  b.classList.add('on','all'); state.len=parseInt(b.dataset.len,10); updatePool();
+});
+$('#shuffleOpt').addEventListener('change',e=>state.shuffleOpt=e.target.checked);
+
+function matchPool(){
+  return QUESTIONS.filter(q=>
+    (state.theme==='all'||q.t===state.theme) &&
+    (state.diff==='all'||q.d===state.diff));
+}
+function updatePool(){
+  const n=matchPool().length;
+  $('#poolCount').textContent=n;
+  $('#startBtn').disabled = n===0;
+  $('#startBtn').textContent = n===0 ? 'Aucune question pour ces filtres' : 'Commencer la révision';
+}
+function shuffle(a){a=a.slice();for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]];}return a;}
+
+const DLABEL={facile:'Facile',moyen:'Moyen',difficile:'Difficile',expert:'Expert'};
+const DCLS={facile:'f',moyen:'m',difficile:'d',expert:'e'};
+
+/* ============================ QUIZ FLOW ============================ */
+$('#startBtn').addEventListener('click',start);
+$('#againBtn').addEventListener('click',()=>{ swap('setup'); });
+$('#quitBtn').addEventListener('click',()=>{ if(confirm('Quitter ce quiz ? La progression sera perdue.')) swap('setup'); });
+
+function swap(which){
+  $('#setup').style.display = which==='setup'?'block':'none';
+  $('#runner').style.display = which==='runner'?'block':'none';
+  $('#results').style.display = which==='results'?'block':'none';
+  if(which==='setup'){ updatePool(); refreshStats(); }
+  window.scrollTo({top:0,behavior:'smooth'});
+}
+
+function start(){
+  let pool=shuffle(matchPool());
+  if(state.len>0) pool=pool.slice(0,state.len);
+  state.pool=pool; state.idx=0; state.score=0; state.seen=0; state.review=[];
+  swap('runner');
+  renderQuestion();
+}
+
+function renderQuestion(){
+  const q=state.pool[state.idx];
+  state.locked=false;
+  // progress
+  $('#pbar').style.width=((state.idx)/state.pool.length*100)+'%';
+  $('#qpos').textContent=`${state.idx+1} / ${state.pool.length}`;
+  $('#scNow').textContent=state.score; $('#scSeen').textContent=state.seen;
+  $('#qfilters').textContent = (state.theme==='all'?'tous thèmes':state.theme==='ebios'?'EBIOS RM':'ISO 27001');
+  // tags
+  $('#qtags').innerHTML =
+    `<span class="tag ${q.t==='ebios'?'ebios':'iso'}">${q.t==='ebios'?'EBIOS RM':'ISO 27001 / SMSI'}</span>`+
+    `<span class="tag ${DCLS[q.d]}">${DLABEL[q.d]}</span>`;
+  $('#qtext').textContent=q.q;
+  // options
+  let order=q.o.map((_,i)=>i);
+  if(state.shuffleOpt) order=shuffle(order);
+  const keys=['A','B','C','D','E','F'];
+  const ansBox=$('#answers'); ansBox.innerHTML='';
+  order.forEach((origIdx,pos)=>{
+    const btn=document.createElement('button');
+    btn.className='ans'; btn.type='button';
+    btn.innerHTML=`<span class="key">${keys[pos]}</span><span>${q.o[origIdx]}</span>`;
+    btn.addEventListener('click',()=>choose(origIdx,btn));
+    ansBox.appendChild(btn);
+  });
+  const ex=$('#explain'); ex.className='explain'; ex.innerHTML='';
+  const nb=$('#nextBtn'); nb.disabled=true; nb.className='btn-next'; nb.textContent='Valider une réponse';
+}
+
+function choose(origIdx,btn){
+  if(state.locked) return;
+  state.locked=true;
+  const q=state.pool[state.idx];
+  const correct = origIdx===q.a;
+  state.seen++;
+  if(correct) state.score++;
+  state.review.push({q:q.q, t:q.t, d:q.d, picked:q.o[origIdx], correctText:q.o[q.a], ok:correct, e:q.e});
+  // mark answers
+  $$('#answers .ans').forEach(b=>{
+    const txt=b.querySelector('span:last-child').textContent;
+    b.disabled=true;
+    if(txt===q.o[q.a]) b.classList.add('correct');
+    else if(b===btn) b.classList.add('wrong');
+    else b.classList.add('dim');
+  });
+  // explanation
+  const ex=$('#explain');
+  ex.innerHTML=`<span class="verdict ${correct?'ok':'ko'}">${correct?'✓ Bonne réponse':'✗ Réponse incorrecte'}</span>`+
+    (correct?'':`<b>Bonne réponse :</b> ${q.o[q.a]}<br>`)+`${q.e}`;
+  ex.classList.add('show');
+  $('#scNow').textContent=state.score; $('#scSeen').textContent=state.seen;
+  const nb=$('#nextBtn'); nb.disabled=false; nb.classList.add('go');
+  nb.textContent = state.idx+1>=state.pool.length ? 'Voir mon résultat' : 'Question suivante →';
+}
+
+$('#nextBtn').addEventListener('click',()=>{
+  if(state.locked===false) return;
+  if(state.idx+1>=state.pool.length){ finish(); }
+  else { state.idx++; renderQuestion(); }
+});
+
+function finish(){
+  const pct=Math.round(state.score/state.pool.length*100);
+  swap('results');
+  // ring
+  const circ=2*Math.PI*60;
+  const arc=$('#ringArc');
+  arc.style.strokeDasharray=circ;
+  arc.style.strokeDashoffset=circ;
+  const col = pct>=80?'var(--ok)':pct>=50?'var(--moyen)':'var(--ko)';
+  arc.style.stroke=col;
+  setTimeout(()=>{arc.style.strokeDashoffset=circ*(1-pct/100);},80);
+  $('#resPct').textContent=pct+'%';
+  $('#resPct').style.color=col;
+  $('#resTitle').textContent = pct>=80?'Excellent, prête pour le QCM !' : pct>=50?'Bien — encore quelques révisions' : 'À retravailler avant demain';
+  $('#resLine').textContent=`${state.score} bonne(s) réponse(s) sur ${state.pool.length}.`;
+  // persist
+  const best=store.get('smsi_best',0);
+  if(pct>best) store.set('smsi_best',pct);
+  store.set('smsi_done', store.get('smsi_done',0)+1);
+  // review of wrong answers
+  const wrong=state.review.filter(r=>!r.ok);
+  const wrap=$('#reviewWrap');
+  if(wrong.length===0){
+    wrap.innerHTML=`<p style="text-align:center;color:var(--ok);margin-top:24px;font-weight:600">Sans-faute ! Aucune question à revoir. 🎯</p>`;
+  } else {
+    let html=`<div class="review-title">À revoir — ${wrong.length} erreur(s)</div>`;
+    wrong.forEach(r=>{
+      html+=`<div class="rev">
+        <div class="rq">${r.q}</div>
+        <div class="ra bad"><span class="ic">✗</span><span>Ta réponse : ${r.picked}</span></div>
+        <div class="ra good"><span class="ic">✓</span><span>Bonne réponse : ${r.correctText}</span></div>
+        <div class="rex">${r.e}</div></div>`;
+    });
+    wrap.innerHTML=html;
+  }
+}
+
+/* ============================ STATS ============================ */
+function refreshStats(){
+  $('#stTotal').textContent=QUESTIONS.length;
+  const b=store.get('smsi_best',null);
+  $('#stBest').textContent = b===null?'—':b+'%';
+  $('#stDone').textContent=store.get('smsi_done',0);
+}
+
+/* ============================ INIT ============================ */
+updatePool();
+refreshStats();
+</script>
+</body>
+</html>
